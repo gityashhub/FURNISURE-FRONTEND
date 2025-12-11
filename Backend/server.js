@@ -93,7 +93,7 @@ process.on("SIGINT", async () => {
   process.exit(0);
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, "localhost", () => {
   console.log(`Server is running on port ${PORT}`);
 });

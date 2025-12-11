@@ -1,21 +1,34 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
 
+let razorpayInstance = null;
 
-const razorpayInstance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_SECRET,
-});
+const getRazorpayInstance = () => {
+  if (!razorpayInstance) {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_SECRET) {
+      return null;
+    }
+    razorpayInstance = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_SECRET,
+    });
+  }
+  return razorpayInstance;
+};
 
 export const createOrder = async (req, res) => {
   try {
+    const instance = getRazorpayInstance();
+    if (!instance) {
+      return res.status(503).json({ success: false, error: "Payment service not configured" });
+    }
     const { amount, currency = "INR", receipt } = req.body;
     const options = {
-      amount: amount * 100, // amount in the smallest currency unit
+      amount: amount * 100,
       currency,
       receipt,
     };
-    const order = await razorpayInstance.orders.create(options);
+    const order = await instance.orders.create(options);
     res.status(201).json({ success: true, order });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
