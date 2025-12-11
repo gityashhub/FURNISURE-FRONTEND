@@ -4,7 +4,10 @@ import { useProducts } from './useProducts';
 import { fetchAllCustomers } from '@/services/customerService';
 import { dashboardService, DashboardStats, RecentOrder, LowStockItem } from '@/services/dashboardService';
 import { DatabaseOrder, OrderItem } from '@/types/product';
-import { useAuth } from '@clerk/clerk-react';
+
+const getToken = async (): Promise<string | null> => {
+  return localStorage.getItem('authToken');
+};
 
 export interface DashboardData {
   stats: DashboardStats;
@@ -21,7 +24,6 @@ export const useDashboard = (): DashboardData => {
   const [customersLoading, setCustomersLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [useApiData, setUseApiData] = useState(false);
-  const { getToken } = useAuth();
   const [apiData, setApiData] = useState<Omit<DashboardData, 'loading' | 'error'> | null>(null);
 
   // Status mapping between backend and UI

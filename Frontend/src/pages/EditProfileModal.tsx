@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@clerk/clerk-react";
 import { editProfile } from "@/services/profileService";
 import { Loader2 } from "lucide-react";
 
@@ -24,7 +23,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   user,
   onSave,
 }) => {
-  const { getToken } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -58,7 +56,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     setError(null);
 
     try {
-      const updatedUser = await editProfile(getToken, formData);
+      const updatedUser = await editProfile(formData);
       onSave(updatedUser.user);
       onClose();
     } catch (err: any) {

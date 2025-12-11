@@ -8,10 +8,10 @@ import { useToast } from '@/hooks/use-toast';
 import { Package, PackageOpen, Check, Settings, Loader2 } from 'lucide-react';
 import ProductManagement from '@/components/ProductManagement';
 import { motion } from 'framer-motion';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AdminPanelOld = () => {
-  const { user } = useUser();
+  const { user } = useAuth();
   const { orders, loading, updateOrderStatus, getOrdersByStatus } = useOrders(!!user);
   const { toast } = useToast();
 

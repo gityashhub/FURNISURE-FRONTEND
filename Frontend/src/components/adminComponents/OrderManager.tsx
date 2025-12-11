@@ -8,7 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatabaseOrder, OrderItem } from '@/types/product';
 import { orderService } from '@/services/orderService';
-import { useAuth } from '@clerk/clerk-react';
+
+const getToken = async (): Promise<string | null> => {
+  return localStorage.getItem('authToken');
+};
 
 // Status mapping between backend and UI
 const statusMap: Record<string, string> = {
@@ -32,17 +35,15 @@ export function OrderManager() {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [orders, setOrders] = useState<(DatabaseOrder & { items: OrderItem[] })[]>([]);
   const [loading, setLoading] = useState(true);
-  const { getToken, isLoaded } = useAuth();
 
   // Fetch orders
   useEffect(() => {
-    if (isLoaded) fetchOrders();
-  }, [isLoaded]);
+    fetchOrders();
+  }, []);
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      if (!isLoaded) return;
       const data = await orderService.getAllOrders(getToken);
 
       // console.log('====================================');

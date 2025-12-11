@@ -10,9 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { ShoppingCart, MapPin, CreditCard, Banknote } from 'lucide-react';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '@/contexts/AuthContext';
 import api, { authApiRequest } from '@/services/api';
-import { useAuth } from '@clerk/clerk-react';
 import { inventoryService } from '@/services/inventoryService';
 
 interface CheckoutFormData {
@@ -40,22 +39,25 @@ declare global {
   }
 }
 
+const getToken = async (): Promise<string | null> => {
+  return localStorage.getItem('authToken');
+};
+
 const Checkout = () => {
   const { items, clearCart } = useCart();
   const { createOrder } = useOrders();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, isSignedIn } = useUser();
-  const { getToken } = useAuth();
+  const { user, isSignedIn } = useAuth();
   const [errors, setErrors] = useState({ pincode: '', phone: '' });
   const [ipAddress, setIpAddress] = useState('');
   // Loading overlay for payment
   const [isRazorpayLoading, setIsRazorpayLoading] = useState(false);
 
-  // Extract user details from Clerk
-  const customerName = user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
-  const email = user?.primaryEmailAddress?.emailAddress || '';
-  const phone = user?.primaryPhoneNumber?.phoneNumber || '';
+  // Extract user details from custom auth
+  const customerName = user?.fullName || '';
+  const email = user?.email || '';
+  const phone = user?.phoneNumber || '';
   const userId = user?.id || '';
 
   const [formData, setFormData] = useState<CheckoutFormData>({

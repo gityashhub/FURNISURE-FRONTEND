@@ -14,10 +14,12 @@ import { inventoryService, CreateProductDTO } from "@/services/inventoryService"
 import { Product } from "@/types/product";
 import { toast } from "sonner";
 import ImageUploader from "@/components/ImageUploader";
-import { useAuth } from "@clerk/clerk-react";
+
+const getToken = async (): Promise<string | null> => {
+  return localStorage.getItem('authToken');
+};
 
 export function InventoryManager() {
-  const { getToken } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);

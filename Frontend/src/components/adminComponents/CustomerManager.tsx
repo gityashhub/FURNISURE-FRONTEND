@@ -5,7 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { fetchAllCustomers } from "@/services/customerService";
-import { useAuth } from "@clerk/clerk-react";
+
+const getToken = async (): Promise<string | null> => {
+  return localStorage.getItem('authToken');
+};
 
 interface Customer {
   _id: string;
@@ -22,7 +25,6 @@ export function CustomerManager() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { getToken } = useAuth();
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -43,7 +45,7 @@ export function CustomerManager() {
       }
     };
     fetchCustomers();
-  }, [getToken]);
+  }, []);
 
   const filteredCustomers = customers.filter(customer =>
     (customer.fullName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||

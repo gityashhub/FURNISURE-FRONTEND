@@ -8,7 +8,7 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.development]
-VITE_BACKENDURL = "http://localhost:3000/api"
+VITE_BACKENDURL = "/api"
 PORT = "3000"
 
 [userenv.production]
@@ -66,6 +66,10 @@ externalPort = 3000
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 5001
+externalPort = 3002
 
 [deployment]
 deploymentTarget = "autoscale"

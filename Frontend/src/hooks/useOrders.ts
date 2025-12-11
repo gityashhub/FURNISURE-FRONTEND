@@ -2,20 +2,21 @@ import { useState, useEffect } from 'react';
 import { orderService } from '@/services/orderService';
 import { DatabaseOrder, OrderItem } from '@/types/product';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@clerk/clerk-react';
+
+const getToken = async (): Promise<string | null> => {
+  return localStorage.getItem('authToken');
+};
 
 export const useOrders = (enabled: boolean = true) => {
   const [orders, setOrders] = useState<(DatabaseOrder & { items: OrderItem[] })[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { getToken, isLoaded } = useAuth();
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      if (!isLoaded) return; // Wait for Clerk to load
       const token = await getToken();
-      if (!token) return; // Wait for token
+      if (!token) return;
       const data = await orderService.getAllOrders(getToken);
       setOrders(data);
     } catch (error) {
@@ -31,10 +32,10 @@ export const useOrders = (enabled: boolean = true) => {
   };
 
   useEffect(() => {
-    if (enabled && isLoaded) {
+    if (enabled) {
       fetchOrders();
     }
-  }, [enabled, isLoaded]);
+  }, [enabled]);
 
   const updateOrderStatus = async (orderId: string, status: 'new' | 'dispatched' | 'completed') => {
     try {

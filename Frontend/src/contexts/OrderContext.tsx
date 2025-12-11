@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useOrders } from '@/hooks/useOrders';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from './AuthContext';
 
 interface OrderContextType {
   orders: any[];
@@ -13,7 +13,7 @@ interface OrderContextType {
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
 export const OrderProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useUser();
+  const { user } = useAuth();
   const orderHook = useOrders(!!user);
 
   // Wrapper to maintain compatibility

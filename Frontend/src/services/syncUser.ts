@@ -1,28 +1,7 @@
-// utils/syncUser.ts
+// This file is no longer needed as the app uses custom JWT auth instead of Clerk
+// User data is synced during registration/login through the backend auth endpoints
 
-import api from "./api";
-import { UserResource } from "@clerk/types";
-
-export const syncUserToBackend = async (user: UserResource, token: string | null) => {
-  if (!user || !token) return;
-
-  const userData = {
-    clerkId: user.id,
-    email: user.primaryEmailAddress?.emailAddress,
-    fullName: user.fullName,
-    phoneNumber: user.phoneNumbers?.[0]?.phoneNumber || null,
-  };
-console.log(userData);
-console.log("syncuser is called");
-
-  try {
-    await api.post("/auth/users/sync", userData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    console.log("✅ User synced to backend");
-  } catch (error) {
-    console.error("❌ Failed to sync user:", error);
-  }
+export const syncUserToBackend = async () => {
+  // No-op - user sync is handled by the backend auth endpoints
+  console.log("User sync is handled by backend auth endpoints");
 };

@@ -3,15 +3,17 @@ import { useState, useEffect } from 'react';
 import { Product } from '@/types/product';
 import { useToast } from '@/hooks/use-toast';
 import { inventoryService, CreateProductDTO } from '@/services/inventoryService';
-import { useAuth } from '@clerk/clerk-react';
 
 let _cachedProducts: Product[] | null = null;
+
+const getToken = async (): Promise<string | null> => {
+  return localStorage.getItem('authToken');
+};
 
 export const useProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { getToken } = useAuth();
 
 
 
