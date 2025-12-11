@@ -1,22 +1,16 @@
-import { useUser } from '@clerk/clerk-react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AdminProtectedRouteProps {
   children: React.ReactNode;
 }
 
 const AdminProtectedRoute = ({ children }: AdminProtectedRouteProps) => {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { isSignedIn, isAdmin, loading } = useAuth();
   const location = useLocation();
 
-
-  
-
-  // Example: Check admin via Clerk's publicMetadata (customize as needed)
-  const isAdmin = user?.publicMetadata?.isAdmin === true;
-
-  if (!isLoaded) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -36,4 +30,4 @@ const AdminProtectedRoute = ({ children }: AdminProtectedRouteProps) => {
   return <>{children}</>;
 };
 
-export default AdminProtectedRoute; 
+export default AdminProtectedRoute;

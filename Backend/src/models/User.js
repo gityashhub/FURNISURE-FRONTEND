@@ -23,10 +23,18 @@ const userSchema = new mongoose.Schema({
     minlength: 6,
     select: false,
   },
+  phoneNumber: {
+    type: String,
+    default: "",
+  },
   role: {
     type: String,
     enum: ["user", "admin"],
     default: "user",
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false,
   },
   createdAt: {
     type: Date,
@@ -34,7 +42,6 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// Encrypt password before saving
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     next();
@@ -43,14 +50,12 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Sign JWT and return
 userSchema.methods.getSignedJwtToken = function () {
-  return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE,
+  return jwt.sign({ id: this._id }, process.env.JWT_SECRET || "fallback_secret_key_change_me", {
+    expiresIn: process.env.JWT_EXPIRE || "30d",
   });
 };
 
-// Match user entered password to hashed password in database
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };

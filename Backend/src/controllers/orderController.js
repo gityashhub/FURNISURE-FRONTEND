@@ -2,8 +2,7 @@ import { Order } from "../models/Order.js";
 import { OrderItem } from "../models/OrderItem.js";
 import { Product } from "../models/Inventory.js";
 import { Customer } from "../models/Customer.js";
-// import { User } from "../models/User.js";
-import ClerkUser from "../models/ClerkUser.js";
+import User from "../models/User.js";
 
 // Helper function to format order data for frontend
 const formatOrderForFrontend = (order) => {
@@ -78,7 +77,7 @@ export const getAllOrders = async (req, res) => {
     if (req.user.isAdmin) {
       for (let order of orders) {
         if (order.user_id && (!order.phone || order.phone.trim() === '')) {
-          const user = await ClerkUser.findOne({ clerkId: order.user_id });
+          const user = await User.findById(order.user_id);
           if (user && user.phoneNumber) {
             order.phone = user.phoneNumber;
           }

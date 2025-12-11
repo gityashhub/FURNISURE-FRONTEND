@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Package, Phone, Mail, Calendar } from "lucide-react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { getProfile, getProfileOrders, cancelOrder } from "@/services/profileService";
 import {
   Dialog,
@@ -18,7 +18,7 @@ import {
 import EditProfileModal from "./EditProfileModal";
 
 const Profile = () => {
-  const { getToken } = useAuth();
+  const { isSignedIn } = useAuth();
   const [user, setUser] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,12 +30,13 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!isSignedIn) return;
       setLoading(true);
       setError(null);
       try {
         const [profileData, ordersData] = await Promise.all([
-          getProfile(getToken),
-          getProfileOrders(getToken),
+          getProfile(),
+          getProfileOrders(),
         ]);
         setUser(profileData);
         setOrders(ordersData);
@@ -46,7 +47,7 @@ const Profile = () => {
       }
     };
     fetchData();
-  }, [getToken]);
+  }, [isSignedIn]);
 
   const handleViewDetails = (orderId: string) => {
     try {
@@ -552,9 +553,8 @@ const Profile = () => {
                                   size="sm"
                                   onClick={async () => {
                                     try {
-                                      await cancelOrder(order.id, getToken);
-                                      // Refresh orders after cancellation
-                                      const updatedOrders = await getProfileOrders(getToken);
+                                      await cancelOrder(order.id);
+                                      const updatedOrders = await getProfileOrders();
                                       setOrders(updatedOrders);
                                     } catch (error) {
                                       console.error("Failed to cancel order:", error);

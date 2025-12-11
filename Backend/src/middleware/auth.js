@@ -1,5 +1,5 @@
-import { verifyToken } from "@clerk/backend";
-import { clerkClient } from "@clerk/clerk-sdk-node";
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 export const protect = async (req, res, next) => {
   let token;
@@ -11,10 +11,6 @@ export const protect = async (req, res, next) => {
     token = req.headers.authorization.split(" ")[1];
   }
 
-  // console.log("====================================tokennnnn");
-  // console.log(token);
-  // console.log("====================================");
-
   if (!token) {
     return res
       .status(401)
@@ -22,35 +18,28 @@ export const protect = async (req, res, next) => {
   }
 
   try {
-    // Verify Clerk token
-    const payload = await verifyToken(token, {
-      secretKey: process.env.CLERK_SECRET_KEY,
-    });
-    const user = await clerkClient.users.getUser(payload.sub);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback_secret_key_change_me");
+    
+    const user = await User.findById(decoded.id);
+    
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: "User not found" });
+    }
 
     req.user = {
-      id: user.id,
-      email: user.emailAddresses?.[0]?.emailAddress,
-      fullName: user.fullName,
-      isAdmin: user.publicMetadata?.isAdmin === true,
-      role: user.publicMetadata?.role || "user",
+      id: user._id,
+      email: user.email,
+      fullName: user.name,
+      phoneNumber: user.phoneNumber,
+      isAdmin: user.isAdmin || user.role === "admin",
+      role: user.role,
     };
 
-    // console.log("====================================");
-    // console.log(payload);
-    // console.log("====================================");
-    // Fetch full user info from Clerk using the user ID (sub)
-    // const user = await users.getUser(payload.sub);
-
-    // console.log("====================================print user");
-    // console.log(user);
-    // console.log("====================================");
-    // req.user = user; // Attach full Clerk user info to req.user
     next();
   } catch (err) {
-    console.log("====================================");
-    console.log(err);
-    console.log("error in ====================================");
+    console.error("Auth error:", err.message);
     return res
       .status(403)
       .json({ message: "Not authorized to access this route" });
@@ -59,13 +48,9 @@ export const protect = async (req, res, next) => {
 
 export const authorize = (...roles) => {
   return (req, res, next) => {
-    // Check if user has required role or isadmin flag from Clerk metadata
     const userRole = req.user.role;
-
-    console.log("====================================");
-    console.log(userRole);
-    console.log("====================================");
-    const isAdmin = req.user.isadmin === true || req.user.isAdmin === true;
+    const isAdmin = req.user.isAdmin === true;
+    
     if (!roles.includes(userRole) && !(roles.includes("admin") && isAdmin)) {
       return res.status(403).json({
         message: `User role ${userRole} is not authorized to access this route`,
@@ -76,8 +61,8 @@ export const authorize = (...roles) => {
 };
 
 export const isAdmin = (req, res, next) => {
-  const isAdmin = req.user?.isAdmin === true || req.user?.isadmin === true;
-  if (!isAdmin) {
+  const isAdminUser = req.user?.isAdmin === true || req.user?.role === "admin";
+  if (!isAdminUser) {
     return res.status(403).json({ message: "User is not authorized as admin" });
   }
   next();

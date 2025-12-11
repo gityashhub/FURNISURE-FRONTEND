@@ -1,29 +1,21 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, ShoppingCart, Settings, LogOut, User, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
-
+import { useAuth } from '@/contexts/AuthContext';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CartDrawer from './CartDrawer';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useUser, useAuth, SignInButton, UserButton, SignedIn, SignedOut } from '@clerk/clerk-react';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { items } = useCart();
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const { user, isSignedIn } = useUser();
-  const { signOut } = useAuth();
-
-  // console.log('====================================');
-  // console.log(user);
-  // console.log('====================================');
-
-  // Fetch isAdmin from user publicMetadata (Clerk)
-  const isAdmin = user?.publicMetadata?.isAdmin === true;
+  const { user, isSignedIn, isAdmin, signOut } = useAuth();
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -37,6 +29,11 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     await signOut();
+    navigate('/');
+  };
+
+  const handleSignIn = () => {
+    navigate('/auth');
   };
 
   return (
@@ -69,13 +66,13 @@ const Navbar = () => {
 
             {/* Right side buttons */}
             <div className="flex items-center space-x-2">
-              {/* Clerk User Menu */}
-              <SignedIn>
+              {/* User Menu */}
+              {isSignedIn ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="hidden lg:flex">
                       <User className="h-4 w-4 mr-2" />
-                      {user?.firstName || 'Account'}
+                      {user?.fullName?.split(' ')[0] || 'Account'}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="bg-white">
@@ -87,10 +84,10 @@ const Navbar = () => {
                         </Link>
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem >
-                      <Link  to="/profile" className="m-0 p-0 flex align-middle">
-                      <UserRound className="h-4 w-4 mr-2" />
-                      Profile
+                    <DropdownMenuItem>
+                      <Link to="/profile" className="m-0 p-0 flex align-middle">
+                        <UserRound className="h-4 w-4 mr-2" />
+                        Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleSignOut}>
@@ -99,18 +96,12 @@ const Navbar = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                {/* <div className="hidden lg:flex ml-2">
-                  <UserButton afterSignOutUrl="/" />
-                </div> */}
-              </SignedIn>
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <Button variant="outline" size="sm" className="hidden lg:flex">
-                    <User className="h-4 w-4 mr-2" />
-                    Sign In
-                  </Button>
-                </SignInButton>
-              </SignedOut>
+              ) : (
+                <Button variant="outline" size="sm" className="hidden lg:flex" onClick={handleSignIn}>
+                  <User className="h-4 w-4 mr-2" />
+                  Sign In
+                </Button>
+              )}
 
               {/* Cart Button */}
               <Button
@@ -168,36 +159,49 @@ const Navbar = () => {
                   </Link>
                 ))}
                 <div className="px-3 py-2 space-y-2 border-t mt-2">
-                  <SignedIn>
-                    {isAdmin && (
-                      <Link to="/admin" onClick={() => setIsOpen(false)}>
-                        <Button variant="secondary" size="sm" className="w-full justify-start">
-                          <Settings className="h-4 w-4 mr-2" />
-                          Admin Panel
+                  {isSignedIn ? (
+                    <>
+                      {isAdmin && (
+                        <Link to="/admin" onClick={() => setIsOpen(false)}>
+                          <Button variant="secondary" size="sm" className="w-full justify-start">
+                            <Settings className="h-4 w-4 mr-2" />
+                            Admin Panel
+                          </Button>
+                        </Link>
+                      )}
+                      <Link to="/profile" onClick={() => setIsOpen(false)}>
+                        <Button variant="secondary" size="sm" className="w-full justify-start mt-2">
+                          <UserRound className="h-4 w-4 mr-2" />
+                          Profile
                         </Button>
                       </Link>
-                    )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          handleSignOut();
+                          setIsOpen(false);
+                        }}
+                        className="w-full justify-start mt-2"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign Out
+                      </Button>
+                    </>
+                  ) : (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={handleSignOut}
+                      onClick={() => {
+                        handleSignIn();
+                        setIsOpen(false);
+                      }}
                       className="w-full justify-start"
                     >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
+                      <User className="h-4 w-4 mr-2" />
+                      Sign In
                     </Button>
-                    {/* <div className="mt-2">
-                      <UserButton afterSignOutUrl="/" />
-                    </div> */}
-                  </SignedIn>
-                  <SignedOut>
-                    <SignInButton mode="modal">
-                      <Button variant="outline" size="sm" className="w-full justify-start">
-                        <User className="h-4 w-4 mr-2" />
-                        Sign In
-                      </Button>
-                    </SignInButton>
-                  </SignedOut>
+                  )}
                 </div>
               </div>
             </motion.div>

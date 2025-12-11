@@ -1,28 +1,46 @@
-import { authApiRequest } from './api';
+import api from './api';
 
-// Fetch the current user's profile
-export async function getProfile(getToken: () => Promise<string | null>) {
-  const response = await authApiRequest('get', '/auth/profile', getToken);
+const getAuthToken = () => localStorage.getItem('authToken');
+
+export async function getProfile() {
+  const token = getAuthToken();
+  if (!token) throw new Error('Not authenticated');
+  
+  const response = await api.get('/auth/profile', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
   return response.data;
 }
 
-// Fetch the current user's orders
-export async function getProfileOrders(getToken: () => Promise<string | null>) {
-  const response = await authApiRequest('get', '/auth/profile/orders', getToken);
+export async function getProfileOrders() {
+  const token = getAuthToken();
+  if (!token) throw new Error('Not authenticated');
+  
+  const response = await api.get('/auth/profile/orders', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
   return response.data;
 }
 
-// Cancel an order
-export async function cancelOrder(orderId: string, getToken: () => Promise<string | null>) {
-  const response = await authApiRequest('put', `/auth/profile/orders/${orderId}`, getToken, { status: 'cancelled' });
+export async function cancelOrder(orderId: string) {
+  const token = getAuthToken();
+  if (!token) throw new Error('Not authenticated');
+  
+  const response = await api.put(`/auth/profile/orders/${orderId}`, 
+    { status: 'cancelled' },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
   return response.data;
 }
 
-// Update the current user's profile
 export async function editProfile(
-  getToken: () => Promise<string | null>,
   profileData: { email?: string; fullName?: string; phoneNumber?: string }
 ) {
-  const response = await authApiRequest('put', '/auth/profile', getToken, profileData);
+  const token = getAuthToken();
+  if (!token) throw new Error('Not authenticated');
+  
+  const response = await api.put('/auth/profile', profileData, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
   return response.data;
 }
