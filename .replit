@@ -8,7 +8,11 @@ channel = "stable-25_05"
 [userenv]
 
 [userenv.development]
-VITE_BACKENDURL = "https://06c5ab7a-1a93-4145-bd83-90801b50b38d-00-vvze61yvz9hj.sisko.replit.dev:3000/api"
+VITE_BACKENDURL = "http://localhost:3000/api"
+PORT = "3000"
+
+[userenv.production]
+VITE_BACKENDURL = "http://localhost:3000/api"
 PORT = "3000"
 
 [workflows]
@@ -58,3 +62,8 @@ externalPort = 3000
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "-c", "cd Backend && node server.js & cd Frontend && npx serve dist -l 5000"]
+build = ["bash", "-c", "cd Frontend && npm run build"]
