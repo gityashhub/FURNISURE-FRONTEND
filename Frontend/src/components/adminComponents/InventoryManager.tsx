@@ -33,20 +33,13 @@ export function InventoryManager() {
     image: "",
     images: [],
     brand: "",
-    assembly: "",
     dimensions_cm: "",
     dimensions_inches: "",
     primary_material: "",
     product_rating: 0,
-    recommended_mattress_size: "",
-    room_type: "",
-    seating_height: undefined,
-    storage: "",
     warranty: "",
-    weight: "",
     category: "",
     description: "",
-    has_set_option: false
   });
   const [productImages, setProductImages] = useState<string[]>([]);
 
@@ -58,8 +51,7 @@ export function InventoryManager() {
     try {
       setIsLoading(true);
       const data = await inventoryService.getAllProducts();
-      const mappedData = data.map((product: any) => ({ ...product, id: product._id }));
-      setProducts(mappedData);
+      setProducts(data);
 
 
     } catch (error) {
@@ -79,20 +71,13 @@ export function InventoryManager() {
       image: "",
       images: [],
       brand: "",
-      assembly: "",
       dimensions_cm: "",
       dimensions_inches: "",
       primary_material: "",
       product_rating: 0,
-      recommended_mattress_size: "",
-      room_type: "",
-      seating_height: undefined,
-      storage: "",
       warranty: "",
-      weight: "",
       category: "",
       description: "",
-      has_set_option: false
     });
     setEditingProduct(null);
     setIsAddDialogOpen(false);
@@ -103,23 +88,19 @@ export function InventoryManager() {
     e.preventDefault();
     
     const productData: CreateProductDTO = {
-      ...formData,
-      image: productImages[0] || '',
-      images: productImages,
       name: formData.name || '',
       price: formData.price || 0,
-      category: formData.category || '',
+      set_price: formData.set_price,
+      image: productImages[0] || (formData.image as string) || '',
+      images: productImages.length ? productImages : (formData.images as string[] | undefined),
       brand: formData.brand || '',
-      assembly: formData.assembly || '',
       dimensions_cm: formData.dimensions_cm || '',
       dimensions_inches: formData.dimensions_inches || '',
       primary_material: formData.primary_material || '',
       product_rating: formData.product_rating || 0,
-      room_type: formData.room_type || '',
-      storage: formData.storage || '',
       warranty: formData.warranty || '',
-      weight: formData.weight || '',
-      description: formData.description || ''
+      category: formData.category || '',
+      description: formData.description || '',
     };
     
     try {
@@ -178,8 +159,8 @@ export function InventoryManager() {
       return;
     }
     setEditingProduct(product);
-    setFormData(product);
-    const existingImages = product.images || [product.image];
+    setFormData(product as unknown as Partial<CreateProductDTO>);
+    const existingImages = product.images && product.images.length > 0 ? product.images : (product.image ? [product.image] : []);
     setProductImages(existingImages.filter(img => img));
     setIsAddDialogOpen(true);
   };
@@ -290,16 +271,6 @@ export function InventoryManager() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="room_type">Room Type</Label>
-                  <Input
-                    id="room_type"
-                    value={formData.room_type || ''}
-                    onChange={(e) => setFormData({...formData, room_type: e.target.value})}
-                    required
-                  />
-                </div>
-                
-                <div>
                   <Label htmlFor="product_rating">Rating (0-5)</Label>
                   <Input
                     id="product_rating"
@@ -307,19 +278,8 @@ export function InventoryManager() {
                     min="0"
                     max="5"
                     step="0.1"
-                    value={formData.product_rating || ''}
-                    onChange={(e) => setFormData({...formData, product_rating: parseFloat(e.target.value)})}
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="weight">Weight</Label>
-                  <Input
-                    id="weight"
-                    value={formData.weight || ''}
-                    onChange={(e) => setFormData({...formData, weight: e.target.value})}
-                    required
+                    value={formData.product_rating ?? ''}
+                    onChange={(e) => setFormData({...formData, product_rating: e.target.value ? parseFloat(e.target.value) : undefined})}
                   />
                 </div>
               </div>
@@ -374,26 +334,6 @@ export function InventoryManager() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="assembly">Assembly</Label>
-                  <Input
-                    id="assembly"
-                    value={formData.assembly || ''}
-                    onChange={(e) => setFormData({...formData, assembly: e.target.value})}
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="storage">Storage</Label>
-                  <Input
-                    id="storage"
-                    value={formData.storage || ''}
-                    onChange={(e) => setFormData({...formData, storage: e.target.value})}
-                    required
-                  />
-                </div>
-                
-                <div>
                   <Label htmlFor="warranty">Warranty</Label>
                   <Input
                     id="warranty"
@@ -402,35 +342,9 @@ export function InventoryManager() {
                     required
                   />
                 </div>
-                
-                <div>
-                  <Label htmlFor="seating_height">Seating Height (inches)</Label>
-                  <Input
-                    id="seating_height"
-                    type="number"
-                    value={formData.seating_height || ''}
-                    onChange={(e) => setFormData({...formData, seating_height: e.target.value ? parseInt(e.target.value) : undefined})}
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="recommended_mattress_size">Recommended Mattress Size</Label>
-                  <Input
-                    id="recommended_mattress_size"
-                    value={formData.recommended_mattress_size || ''}
-                    onChange={(e) => setFormData({...formData, recommended_mattress_size: e.target.value})}
-                  />
-                </div>
               </div>
               
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="has_set_option"
-                  checked={formData.has_set_option || false}
-                  onCheckedChange={(checked) => setFormData({...formData, has_set_option: checked as boolean})}
-                />
-                <Label htmlFor="has_set_option">Has Set Option</Label>
-              </div>
+              {/* set_price handled via input above; no separate has_set_option flag in schema */}
               
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={resetForm}>

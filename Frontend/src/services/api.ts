@@ -13,9 +13,9 @@ if (!API_URL) {
 // Create axios instance with default config
 const api = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  // Don't force Content-Type - let axios auto-detect based on request data
+  // For JSON: axios auto-sets application/json
+  // For FormData: axios auto-sets multipart/form-data with proper boundary
 });
 
 // Helper function to make authenticated requests with Clerk token

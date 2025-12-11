@@ -26,6 +26,7 @@ const Auth = () => {
   const [signUpData, setSignUpData] = useState({
     fullName: "",
     email: "",
+    phoneNumber: "",
     password: "",
     confirmPassword: "",
   });
@@ -62,7 +63,7 @@ const Auth = () => {
       return;
     }
 
-    const result = await signUp(signUpData.email, signUpData.password, signUpData.fullName);
+    const result = await signUp(signUpData.email, signUpData.password, signUpData.fullName, signUpData.phoneNumber);
     
     if (result.error) {
       setError(result.error);
@@ -150,6 +151,17 @@ const Auth = () => {
                     placeholder="Enter your email"
                     value={signUpData.email}
                     onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-phone">Phone Number</Label>
+                  <Input
+                    id="signup-phone"
+                    type="tel"
+                    placeholder="Enter your phone number"
+                    value={signUpData.phoneNumber}
+                    onChange={(e) => setSignUpData({ ...signUpData, phoneNumber: e.target.value })}
                     required
                   />
                 </div>

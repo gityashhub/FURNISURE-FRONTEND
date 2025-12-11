@@ -32,49 +32,69 @@ export const getInventoryById = async (req, res) => {
 // Create new inventory
 export const createInventory = async (req, res) => {
   try {
-    // Check if all required fields are present
+    // Only accept fields defined in the new product schema
+    const {
+      name,
+      price,
+      set_price,
+      image,
+      images,
+      brand,
+      dimensions_cm,
+      dimensions_inches,
+      primary_material,
+      product_rating,
+      warranty,
+      category,
+      description,
+    } = req.body;
+
     const requiredFields = [
       "name",
       "price",
       "image",
       "brand",
-      "assembly",
       "dimensions_cm",
       "dimensions_inches",
       "primary_material",
-      "room_type",
-      "storage",
       "warranty",
-      "weight",
       "category",
       "description",
     ];
-
-    console.log(req.body);
 
     const missingFields = requiredFields.filter((field) => !req.body[field]);
 
     if (missingFields.length > 0) {
       return res.status(400).json({
         message: "Missing required fields",
-        missingFields: missingFields,
+        missingFields,
       });
     }
 
     // Validate numeric fields
-    if (isNaN(req.body.price) || req.body.price <= 0) {
-      return res.status(400).json({
-        message: "Price must be a positive number",
-      });
+    if (isNaN(price) || price <= 0) {
+      return res.status(400).json({ message: "Price must be a positive number" });
     }
 
-    if (req.body.seating_height && isNaN(req.body.seating_height)) {
-      return res.status(400).json({
-        message: "Seating height must be a number",
-      });
+    if (product_rating && (isNaN(product_rating) || product_rating < 0 || product_rating > 5)) {
+      return res.status(400).json({ message: "Product rating must be between 0 and 5" });
     }
 
-    const inventory = new Product(req.body);
+    const inventory = new Product({
+      name,
+      price,
+      set_price,
+      image,
+      images,
+      brand,
+      dimensions_cm,
+      dimensions_inches,
+      primary_material,
+      product_rating,
+      warranty,
+      category,
+      description,
+    });
     await inventory.save();
     res.status(201).json(inventory);
   } catch (error) {

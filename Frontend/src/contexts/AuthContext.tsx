@@ -15,7 +15,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isSignedIn: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, fullName: string, phoneNumber?: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -90,12 +90,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string, phoneNumber?: string) => {
     try {
       const response = await api.post('/auth/register', {
         email,
         password,
         fullName,
+        phoneNumber,
       });
       const { token, user: userData } = response.data;
       localStorage.setItem('authToken', token);

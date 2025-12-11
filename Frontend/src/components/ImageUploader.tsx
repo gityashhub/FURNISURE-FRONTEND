@@ -19,13 +19,28 @@ const ImageUploader = ({ images, onImagesChange, maxImages = 5 }: ImageUploaderP
   // Upload image to backend
   const uploadImage = async (file: File): Promise<string | null> => {
     try {
+      console.log('=== IMAGE UPLOAD START ===');
+      console.log('File name:', file.name);
+      console.log('File type:', file.type);
+      console.log('File size:', file.size);
+      
+      if (file.size === 0) {
+        console.error('File is empty!');
+        toast({
+          title: 'Upload failed',
+          description: 'File is empty. Please select a valid image.',
+          variant: 'destructive',
+        });
+        return null;
+      }
+      
       const formData = new FormData();
       formData.append('file', file);
-      const response = await api.post('/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      
+      console.log('FormData appended, size:', file.size);
+      
+      // axios will auto-detect FormData and set proper multipart/form-data with boundary
+      const response = await api.post('/upload', formData);
       const url = response.data.url;
 
       // console.log('========url in new============================');
@@ -38,8 +53,14 @@ const ImageUploader = ({ images, onImagesChange, maxImages = 5 }: ImageUploaderP
       // Otherwise, prepend backend base URL
       // const backendBaseUrl = 'http://localhost:5000';
       return  url;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading image:', error);
+      // show a helpful toast when upload fails
+      toast({
+        title: 'Upload failed',
+        description: error?.response?.data?.message || 'Something went wrong while uploading image',
+        variant: 'destructive',
+      });
       return null;
     }
   };

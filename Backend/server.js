@@ -66,6 +66,17 @@ app.use("*", (req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
 
+// Global error handler to return JSON for unexpected errors (including multer/cloudinary)
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err && err.message ? err.message : err);
+  if (res.headersSent) {
+    return next(err);
+  }
+  const status = err && err.status ? err.status : 500;
+  const message = err && err.message ? err.message : 'Server error';
+  res.status(status).json({ message });
+});
+
 // MongoDB Connection with better error handling
 mongoose
   .connect(process.env.MONGODB_URI)

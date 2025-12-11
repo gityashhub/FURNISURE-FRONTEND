@@ -1,8 +1,9 @@
 import User from "../models/User.js";
+import { Order } from "../models/Order.js";
 
 export const register = async (req, res) => {
   try {
-    const { email, password, fullName, name } = req.body;
+    const { email, password, fullName, name, phoneNumber } = req.body;
 
     let user = await User.findOne({ email });
     if (user) {
@@ -13,6 +14,7 @@ export const register = async (req, res) => {
       name: fullName || name,
       email,
       password,
+      phoneNumber: phoneNumber || "",
     });
 
     const token = user.getSignedJwtToken();
@@ -23,6 +25,7 @@ export const register = async (req, res) => {
         id: user._id,
         email: user.email,
         fullName: user.name,
+        phoneNumber: user.phoneNumber,
         isAdmin: user.isAdmin || user.role === "admin",
       },
     });
@@ -55,6 +58,7 @@ export const login = async (req, res) => {
         id: user._id,
         email: user.email,
         fullName: user.name,
+        phoneNumber: user.phoneNumber,
         isAdmin: isAdmin,
       },
     });
@@ -108,8 +112,32 @@ export const checkEmail = async (req, res) => {
 
 export const fetchAllCustomers = async (req, res) => {
   try {
-    const customers = await User.find({ role: "user" }).select("-password");
-    res.json(customers);
+    const users = await User.find({ role: "user" }).select("-password");
+
+    const customersWithStats = await Promise.all(
+      users.map(async (user) => {
+        const orders = await Order.find({ email: user.email }).sort({ created_at: -1 });
+        const totalOrders = orders.length;
+        const totalSpent = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+        const lastOrder = orders[0] || null;
+
+        return {
+          id: user._id,
+          _id: user._id,
+          email: user.email,
+          name: user.name,
+          fullName: user.name,
+          phoneNumber: user.phoneNumber || "",
+          createdAt: user.createdAt,
+          totalOrders,
+          totalSpent,
+          lastOrderDate: lastOrder ? lastOrder.created_at || lastOrder.createdAt : null,
+          lastOrderAddress: lastOrder ? lastOrder.address : null,
+        };
+      })
+    );
+
+    res.json(customersWithStats);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

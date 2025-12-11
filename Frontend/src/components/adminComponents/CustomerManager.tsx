@@ -12,12 +12,17 @@ const getToken = async (): Promise<string | null> => {
 
 interface Customer {
   _id: string;
-  clerkId: string;
+  clerkId?: string;
   email: string;
-  fullName: string | null;
-  phoneNumber: string;
+  fullName?: string | null;
+  name?: string | null;
+  phoneNumber?: string;
+  totalOrders?: number;
+  totalSpent?: number;
+  lastOrderDate?: string | null;
+  lastOrderAddress?: string | null;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export function CustomerManager() {
@@ -48,12 +53,12 @@ export function CustomerManager() {
   }, []);
 
   const filteredCustomers = customers.filter(customer =>
-    (customer.fullName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+    ((customer.fullName || customer.name || "") as string).toLowerCase().includes(searchTerm.toLowerCase()) ||
     customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phoneNumber.includes(searchTerm)
+    (customer.phoneNumber || "").includes(searchTerm)
   );
 
-  const getInitials = (name: string | null) => {
+  const getInitials = (name: string | null | undefined) => {
     if (!name) return "?";
     return name
       .split(" ")
@@ -134,13 +139,13 @@ export function CustomerManager() {
                 <div className="flex items-center space-x-3">
                   <Avatar className="w-12 h-12">
                     <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
-                      {getInitials(customer.fullName)}
+                      {getInitials(customer.fullName || customer.name)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <CardTitle className="text-lg">{customer.fullName || 'NA'}</CardTitle>
+                    <CardTitle className="text-lg">{customer.fullName || customer.name || 'NA'}</CardTitle>
                     <Badge className="bg-gray-100 text-gray-800 border-gray-200">
-                      NA
+                      Joined: {new Date(customer.createdAt).toLocaleDateString()}
                     </Badge>
                   </div>
                 </div>
@@ -160,21 +165,21 @@ export function CustomerManager() {
                 
                 <div className="flex items-center space-x-2 text-sm text-gray-600">
                   <MapPin className="w-4 h-4" />
-                  <span className="line-clamp-2">NA</span>
+                  <span className="line-clamp-2">{customer.lastOrderAddress || 'NA'}</span>
                 </div>
 
                 <div className="pt-3 border-t space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Total Orders:</span>
-                    <span className="font-medium">NA</span>
+                    <span className="font-medium">{customer.totalOrders ?? 'NA'}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Total Spent:</span>
-                    <span className="font-medium text-green-600">NA</span>
+                    <span className="font-medium text-green-600">{typeof customer.totalSpent === 'number' ? `₹${customer.totalSpent.toFixed(2)}` : 'NA'}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Last Order:</span>
-                    <span className="font-medium">NA</span>
+                    <span className="font-medium">{customer.lastOrderDate ? new Date(customer.lastOrderDate).toLocaleDateString() : 'NA'}</span>
                   </div>
                 </div>
               </div>

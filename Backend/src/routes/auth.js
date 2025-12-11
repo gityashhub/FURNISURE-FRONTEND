@@ -17,6 +17,7 @@ const router = express.Router();
 const registerValidation = [
   check("fullName", "Name is required").not().isEmpty(),
   check("email", "Please include a valid email").isEmail(),
+  check("phoneNumber", "Please include a valid phone number").not().isEmpty().isMobilePhone('any'),
   check(
     "password",
     "Please enter a password with 6 or more characters"
